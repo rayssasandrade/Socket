@@ -13,7 +13,7 @@ public class ClienteUDP2 {
         DatagramSocket socket = new DatagramSocket(5000);
         String msg;
         String msgRecebida;
-        InetAddress ip = InetAddress.getByName("25.74.5.8");
+        InetAddress ip = InetAddress.getByName("25.78.99.1");
         do {
             //recebendo uma mensagem do clienteUDP1
             byte[] cartaAReceber = new byte[100];

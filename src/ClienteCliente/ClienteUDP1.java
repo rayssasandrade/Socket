@@ -11,7 +11,7 @@ public class ClienteUDP1 {
         DatagramSocket socket = new DatagramSocket(5000);
         String msg;
         String msgRecebida;
-        InetAddress ip = InetAddress.getByName("25.78.99.1");
+        InetAddress ip = InetAddress.getByName("25.74.5.8");
         do{
             System.out.println(  InetAddress.getLocalHost().getHostAddress() + " | " + InetAddress.getLocalHost().getHostName() + ": ");
             Scanner teclado = new Scanner(System.in);
