@@ -29,7 +29,7 @@ public class ServidorUDP {
             grupoMulticast.joinGroup(ipGrupo);
         } catch (SocketException e) {}
 
-        System.out.println("Digite: finalizar para parar a aplicação");
+        System.out.println("Digite: finalizar, para parar a aplicação");
         String msgTeclado = teclado.nextLine();
 
         String msg;
@@ -41,48 +41,50 @@ public class ServidorUDP {
             DatagramPacket envelopeAReceber = new DatagramPacket(cartaAReceber, cartaAReceber.length);
             socket.receive(envelopeAReceber);
             msgRecebida = new String(envelopeAReceber.getData()).trim();
-            enviarParaGrupo(msgRecebida, grupoMulticast, ipGrupo, portaMulticast);
 
-            if(msgRecebida.equalsIgnoreCase("Quem está disponível?")){
-                msg = "Estou disponível";
-                enviarMensagem(msg, envelopeAReceber);
-            }
+            if(msgRecebida.contains("::")) {
+                //clientes = ;
+            } else {
 
-            if(msgRecebida.equalsIgnoreCase("x")){
-                removerDaLista(envelopeAReceber.getAddress());
-            }
+                if (msgRecebida.equalsIgnoreCase("x")) {
+                    removerDaLista(envelopeAReceber.getAddress());
+                }
 
-            if(estaNaLista(envelopeAReceber.getAddress())==false) {
-                clientes.add(envelopeAReceber);
-                System.out.println("Cliente conectado");
-            }
+                if (estaNaLista(envelopeAReceber.getAddress()) == false) {
+                    clientes.add(envelopeAReceber);
+                    System.out.println("Cliente conectado");
+                    String mensagem = "::" + clientes.toString();
+                    enviarParaGrupo(mensagem, grupoMulticast, ipGrupo, portaMulticast);
+                }
 
-            if(eInteiro(msgRecebida)){
-                if(!msgRecebida.equalsIgnoreCase("0")){
-                    //enviando ip cliente para comunicação direta
-                    msg = "ip:" + clientes.get(Integer.parseInt(msgRecebida) - 1).getAddress().getHostAddress();
+                if (eInteiro(msgRecebida)) {
+                    if (!msgRecebida.equalsIgnoreCase("0")) {
+                        //enviando ip cliente para comunicação direta
+                        msg = "ip:" + clientes.get(Integer.parseInt(msgRecebida) - 1).getAddress().getHostAddress();
+                        enviarMensagem(msg, envelopeAReceber);
+                    }
+                }
+
+                if (msgRecebida.equalsIgnoreCase("fim") || msgRecebida.equalsIgnoreCase("")) {
+                    //enviando lista de clientes
+                    String lista;
+                    lista = "{";
+                    int id = 1;
+                    for (int i = 0; i < clientes.size(); i++) {
+                        lista += id + i + "= [Usuário: " + clientes.get(i).getAddress().getHostName()
+                                + " | IP: " + clientes.get(i).getAddress().getHostAddress()
+                                + " | Porta: " + clientes.get(i).getPort() + "], ";
+                    }
+                    lista += "}";
+                    msg = "Esta é a lista de clientes: " + lista + "\n Digite o número de algum deles caso deseje se comunicar, \n Digite 0 para aguardar comunicação, ou \n Digite x para finalizar aplicação.";
                     enviarMensagem(msg, envelopeAReceber);
                 }
-            }
-
-            if(msgRecebida.equalsIgnoreCase("fim") || msgRecebida.equalsIgnoreCase("")) {
-                //enviando lista de clientes
-                String lista;
-                lista = "{";
-                int id = 1;
-                for (int i = 0; i < clientes.size(); i++) {
-                    lista += id + i + "= [Usuário: " + clientes.get(i).getAddress().getHostName()
-                            + " | IP: " + clientes.get(i).getAddress().getHostAddress()
-                            + " | Porta: " + clientes.get(i).getPort() + "], ";
+                if (msgRecebida.equalsIgnoreCase("x")) {
+                    removerDaLista(envelopeAReceber.getAddress());
                 }
-                lista += "}";
-                msg = "Esta é a lista de clientes: " + lista + "\n Digite o número de algum deles caso deseje se comunicar, \n Digite 0 para aguardar comunicação, ou \n Digite x para finalizar aplicação.";
-                enviarMensagem(msg, envelopeAReceber);
-            }
-            if(msgRecebida.equalsIgnoreCase("x")){
-                removerDaLista(envelopeAReceber.getAddress());
             }
         }
+        grupoMulticast.leaveGroup(InetAddress.getLocalHost());
     }
 
     public static boolean eInteiro(String s){
