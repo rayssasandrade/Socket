@@ -2,6 +2,7 @@ package ClientesServidoresMulticast;
 
 import java.io.IOException;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -43,7 +44,10 @@ public class ServidorUDP {
             msgRecebida = new String(envelopeAReceber.getData()).trim();
 
             if(msgRecebida.contains("::")) {
-                //clientes = ;
+                enviarMensagem("::Estou disponível", envelopeAReceber);
+                System.out.println(msgRecebida);
+            } else if(msgRecebida.contains(":!")) {
+                atualizarClientes(msgRecebida);
             } else {
 
                 if (msgRecebida.equalsIgnoreCase("x")) {
@@ -53,7 +57,7 @@ public class ServidorUDP {
                 if (estaNaLista(envelopeAReceber.getAddress()) == false) {
                     clientes.add(envelopeAReceber);
                     System.out.println("Cliente conectado");
-                    String mensagem = "::" + clientes.toString();
+                    String mensagem = ":!" + clientes.toString();
                     enviarParaGrupo(mensagem, grupoMulticast, ipGrupo, portaMulticast);
                 }
 
@@ -85,6 +89,22 @@ public class ServidorUDP {
             }
         }
         grupoMulticast.leaveGroup(InetAddress.getLocalHost());
+    }
+
+    private static void atualizarClientes(String msgClientes) {
+        clientes = null;
+        int index = 0;
+        for (int i = 0; i < msgClientes.length(); i++) {
+            char c = msgClientes.charAt(i);
+            if(c == '['){
+                index = i;
+            }
+            if(c == ']'){
+                String sequencia =  msgClientes.substring(index, i);
+                DatagramPacket novoCliente = new DatagramPacket(sequencia.getBytes(), sequencia.length());
+                clientes.add(novoCliente);
+            }
+        }
     }
 
     public static boolean eInteiro(String s){
